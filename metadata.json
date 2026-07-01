@@ -1,0 +1,6 @@
+{
+  "name": "Método Hope Start",
+  "description": "Plataforma de Posicionamento e SEO Local de Smiley Rhuan para dominar as buscas regionais no Google.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
