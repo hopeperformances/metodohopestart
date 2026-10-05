@@ -77,7 +77,8 @@ export function MultiStepForm({ onSubmit, onCancel }: MultiStepFormProps) {
     numero: '',
     complemento: '',
     whatsapp: '',
-    instagram: ''
+    instagram: '',
+    aceitaCall: ''
   });
   
   const [cepLoading, setCepLoading] = useState(false);
@@ -297,6 +298,22 @@ export function MultiStepForm({ onSubmit, onCancel }: MultiStepFormProps) {
         </div>
       ),
       isValid: () => data.instagram.trim().length > 1
+    },
+    {
+      id: 'call',
+      title: 'Ao receber o diagnóstico, você aceita participar de uma call de aproximadamente 15 minutos, sem compromisso, para eu te mostrar como poderia ajudar seu negócio?',
+      render: () => (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="sr-only">Você aceita participar da call?</legend>
+          {([{ value: 'sim', label: 'Sim' }, { value: 'nao', label: 'Não' }] as const).map(option => (
+            <label key={option.value} className={`flex items-center gap-3 rounded-xl border-2 p-4 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-[#4285F4] focus-within:ring-offset-2 ${data.aceitaCall === option.value ? 'border-[#4285F4] bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}>
+              <input type="radio" name="aceitaCall" value={option.value} checked={data.aceitaCall === option.value} onChange={() => setData({ ...data, aceitaCall: option.value })} className="h-5 w-5 accent-[#4285F4]" />
+              <span className="text-base sm:text-lg font-semibold">{option.label}</span>
+            </label>
+          ))}
+        </fieldset>
+      ),
+      isValid: () => data.aceitaCall === 'sim' || data.aceitaCall === 'nao'
     }
   ];
 

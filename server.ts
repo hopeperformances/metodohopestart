@@ -28,7 +28,8 @@ async function startServer() {
         numero: String(rawData.numero || '').trim(),
         complemento: String(rawData.complemento || '').trim(),
         whatsapp: String(rawData.whatsapp || '').trim(),
-        instagram: String(rawData.instagram || '').trim()
+        instagram: String(rawData.instagram || '').trim(),
+        aceitaCall: rawData.aceitaCall === 'sim' ? 'sim' : rawData.aceitaCall === 'nao' ? 'nao' : ''
       };
       
       // 1. Sempre salvar localmente em leads.json no servidor
@@ -94,7 +95,7 @@ async function startServer() {
             from: GMAIL_USER,
             to: 'hopebrusque@gmail.com',
             subject: 'NOVO LEAD DISPONÍVEL NO MÉTODO',
-            text: `Um novo lead se cadastrou!\n\nNome: ${data.nome}\nSegmento: ${data.segmento}\nEmpresa: ${data.empresa}\nEndereço: ${data.endereco}, ${data.numero} - ${data.complemento}\nWhatsApp: ${data.whatsapp}\nInstagram: ${data.instagram}\n\nFalar no WhatsApp: ${whatsappLink}`
+            text: `Um novo lead se cadastrou!\n\nNome: ${data.nome}\nSegmento: ${data.segmento}\nEmpresa: ${data.empresa}\nEndereço: ${data.endereco}, ${data.numero} - ${data.complemento}\nWhatsApp: ${data.whatsapp}\nInstagram: ${data.instagram}\nAceita call de aproximadamente 15 minutos: ${data.aceitaCall === 'sim' ? 'Sim' : data.aceitaCall === 'nao' ? 'Não' : 'Não informado'}\n\nFalar no WhatsApp: ${whatsappLink}`
           });
           emailStatus = 'sucesso';
           console.log('✉️ Notificação de Email enviada com sucesso para hopebrusque@gmail.com');
@@ -126,7 +127,8 @@ async function startServer() {
             data.empresa,
             `${data.endereco}, ${data.numero}${data.complemento ? ' - ' + data.complemento : ''}`,
             `+55${data.whatsapp}`,
-            `@${data.instagram}`
+            `@${data.instagram}`,
+            data.aceitaCall === 'sim' ? 'Sim' : data.aceitaCall === 'nao' ? 'Não' : 'Não informado'
           ]);
           sheetsStatus = 'sucesso';
           console.log('📊 Google Sheets atualizado com sucesso!');
@@ -149,7 +151,8 @@ async function startServer() {
             `🏢 <b>Empresa:</b> ${data.empresa}\n` +
             `📍 <b>Endereço:</b> ${formattedAddress}\n` +
             `📱 <b>WhatsApp:</b> +55${data.whatsapp}\n` +
-            `📸 <b>Instagram:</b> https://instagram.com/${data.instagram}\n\n` +
+            `📸 <b>Instagram:</b> https://instagram.com/${data.instagram}\n` +
+            `📞 <b>Aceita call de aproximadamente 15 minutos:</b> ${data.aceitaCall === 'sim' ? 'Sim' : data.aceitaCall === 'nao' ? 'Não' : 'Não informado'}\n\n` +
             `🔗 <a href="${whatsappLink}"><b>Falar no WhatsApp</b></a>`;
 
           const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {

@@ -8,4 +8,5 @@ export interface LeadData {
   complemento: string;
   whatsapp: string;
   instagram: string;
+  aceitaCall: '' | 'sim' | 'nao';
 }
