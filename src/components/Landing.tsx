@@ -316,13 +316,13 @@ export function Landing({ onStart }: LandingProps) {
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#4285F4]/20 flex items-center justify-center mb-4 sm:mb-6 border border-[#4285F4]/30 group-hover:scale-110 transition-transform shadow-lg shadow-[#4285F4]/20">
                 <Search className="w-6 h-6 sm:w-8 sm:h-8 text-[#4285F4]" />
               </div>
-              <h4 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 font-display text-white">1. Análise & Estratégia</h4>
+              <h4 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 font-display text-white">1. Otimização do Google Meu Negócio</h4>
               <p className="text-slate-300 font-medium leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
-                Determinamos o potential exato do seu negócio através da análise de <strong>volume de buscas e palavras-chave</strong>. Descobrimos o que as pessoas pesquisam, como sua empresa ranqueia hoje e onde podemos chegar com o método aplicado.
+                Otimizamos seu <strong>Perfil da Empresa no Google (Google Meu Negócio)</strong> com informações, categorias e serviços alinhados ao seu negócio, para facilitar que clientes da sua região encontrem sua empresa e entrem em contato.
               </p>
               <ul className="space-y-2 mt-auto pt-4 sm:pt-6 border-t border-white/10">
-                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Mapeamento de Concorrência</li>
-                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Definição de Palavras-Chave</li>
+                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Categorias e Serviços Otimizados</li>
+                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Presença Local no Google Maps</li>
               </ul>
             </div>
 
@@ -330,12 +330,12 @@ export function Landing({ onStart }: LandingProps) {
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#34A853]/20 flex items-center justify-center mb-4 sm:mb-6 border border-[#34A853]/30 group-hover:scale-110 transition-transform shadow-lg shadow-[#34A853]/20">
                 <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-[#34A853]" />
               </div>
-              <h4 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 font-display text-white">2. Otimização Orgânica</h4>
+              <h4 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 font-display text-white">2. Desenvolvimento de Site com SEO</h4>
               <p className="text-slate-300 font-medium leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
-                O coração do método. Realizamos o desenvolvimento e otimização profunda do seu site e <strong>Perfil da Empresa no Google (Google Meu Negócio)</strong>. Este processo fundamental leva entre 7 e 15 dias.
+                Desenvolvemos um <strong>site focado em tráfego orgânico</strong>, usando técnicas de SEO e palavras-chave relacionadas aos seus serviços e à sua região. Uma estrutura rápida, clara e preparada para transformar visitas em pedidos de orçamento.
               </p>
               <ul className="space-y-2 mt-auto pt-4 sm:pt-6 border-t border-white/10">
-                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#34A853]" /> SEO Local</li>
+                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#34A853]" /> SEO e Palavras-Chave</li>
                 <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#34A853]" /> Site Rápido e Otimizado</li>
               </ul>
             </div>
@@ -344,13 +344,13 @@ export function Landing({ onStart }: LandingProps) {
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#FBBC05]/20 flex items-center justify-center mb-4 sm:mb-6 border border-[#FBBC05]/30 group-hover:scale-110 transition-transform shadow-lg shadow-[#FBBC05]/20">
                 <Target className="w-6 h-6 sm:w-8 sm:h-8 text-[#FBBC05]" />
               </div>
-              <h4 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 font-display text-white">3. Tração & Crescimento</h4>
+              <h4 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 font-display text-white">3. Google Ads na Pesquisa e no Maps</h4>
               <p className="text-slate-300 font-medium leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
-                Com a base pronta, usamos <strong>anúncios de pesquisa pagos (Google Ads)</strong> para complementar a estratégia orgânica. Iniciamos os planos recorrentes com relatórios e melhoria contínua baseada no nível de comparação dos concorrentes.
+                Criamos e gerenciamos <strong>anúncios na Rede de Pesquisa e no Google Maps com Google Ads</strong> para alcançar pessoas que já procuram seus serviços. Acompanhamos os resultados e ajustamos as campanhas para complementar o tráfego orgânico.
               </p>
               <ul className="space-y-2 mt-auto pt-4 sm:pt-6 border-t border-white/10">
-                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Google Ads Estratégico</li>
-                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Acompanhamento Mensal</li>
+                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Anúncios na Pesquisa e no Maps</li>
+                <li className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Acompanhamento e Otimização</li>
               </ul>
             </div>
           </div>
@@ -387,13 +387,13 @@ export function Landing({ onStart }: LandingProps) {
                 <div className="w-11 h-11 rounded-xl bg-[#4285F4]/20 flex items-center justify-center mb-4 border border-[#4285F4]/30 shadow-lg shadow-[#4285F4]/20">
                   <Search className="w-5.5 h-5.5 text-[#4285F4]" />
                 </div>
-                <h4 className="text-lg font-bold mb-2 font-display text-white">1. Análise & Estratégia</h4>
+                <h4 className="text-lg font-bold mb-2 font-display text-white">1. Otimização do Google Meu Negócio</h4>
                 <p className="text-slate-300 font-medium leading-relaxed mb-4 text-xs">
-                  Determinamos o potential exato do seu negócio através da análise de <strong>volume de buscas e palavras-chave</strong>. Descobrimos o que as pessoas pesquisam, como sua empresa ranqueia hoje e onde podemos chegar com o método aplicado.
+                  Otimizamos seu <strong>Perfil da Empresa no Google (Google Meu Negócio)</strong> com informações, categorias e serviços alinhados ao seu negócio, para facilitar que clientes da sua região encontrem sua empresa e entrem em contato.
                 </p>
                 <ul className="space-y-2 mt-auto pt-4 border-t border-white/10">
-                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Mapeamento de Concorrência</li>
-                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Definição de Palavras-Chave</li>
+                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Categorias e Serviços Otimizados</li>
+                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#4285F4]" /> Presença Local no Google Maps</li>
                 </ul>
               </div>
 
@@ -410,12 +410,12 @@ export function Landing({ onStart }: LandingProps) {
                 <div className="w-11 h-11 rounded-xl bg-[#34A853]/20 flex items-center justify-center mb-4 border border-[#34A853]/30 shadow-lg shadow-[#34A853]/20">
                   <MapPin className="w-5.5 h-5.5 text-[#34A853]" />
                 </div>
-                <h4 className="text-lg font-bold mb-2 font-display text-white">2. Otimização Orgânica</h4>
+                <h4 className="text-lg font-bold mb-2 font-display text-white">2. Desenvolvimento de Site com SEO</h4>
                 <p className="text-slate-300 font-medium leading-relaxed mb-4 text-xs">
-                  O coração do método. Realizamos o desenvolvimento e otimização profunda do seu site e <strong>Perfil da Empresa no Google (Google Meu Negócio)</strong>. Este processo fundamental leva entre 7 e 15 dias.
+                  Desenvolvemos um <strong>site focado em tráfego orgânico</strong>, usando técnicas de SEO e palavras-chave relacionadas aos seus serviços e à sua região. Uma estrutura rápida, clara e preparada para transformar visitas em pedidos de orçamento.
                 </p>
                 <ul className="space-y-2 mt-auto pt-4 border-t border-white/10">
-                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#34A853]" /> SEO Local</li>
+                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#34A853]" /> SEO e Palavras-Chave</li>
                   <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#34A853]" /> Site Rápido e Otimizado</li>
                 </ul>
               </div>
@@ -433,13 +433,13 @@ export function Landing({ onStart }: LandingProps) {
                 <div className="w-11 h-11 rounded-xl bg-[#FBBC05]/20 flex items-center justify-center mb-4 border border-[#FBBC05]/30 shadow-lg shadow-[#FBBC05]/20">
                   <Target className="w-5.5 h-5.5 text-[#FBBC05]" />
                 </div>
-                <h4 className="text-lg font-bold mb-2 font-display text-white">3. Tração & Crescimento</h4>
+                <h4 className="text-lg font-bold mb-2 font-display text-white">3. Google Ads na Pesquisa e no Maps</h4>
                 <p className="text-slate-300 font-medium leading-relaxed mb-4 text-xs">
-                  Com a base pronta, usamos <strong>anúncios de pesquisa pagos (Google Ads)</strong> para complementar a estratégia orgânica. Iniciamos os planos recorrentes com relatórios e melhoria contínua baseada no nível de comparação dos concorrentes.
+                  Criamos e gerenciamos <strong>anúncios na Rede de Pesquisa e no Google Maps com Google Ads</strong> para alcançar pessoas que já procuram seus serviços. Acompanhamos os resultados e ajustamos as campanhas para complementar o tráfego orgânico.
                 </p>
                 <ul className="space-y-2 mt-auto pt-4 border-t border-white/10">
-                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Google Ads Estratégico</li>
-                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Acompanhamento Mensal</li>
+                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Anúncios na Pesquisa e no Maps</li>
+                  <li className="flex items-center gap-2 text-xs font-bold text-slate-200"><CheckCircle2 className="w-3.5 h-3.5 text-[#FBBC05]" /> Acompanhamento e Otimização</li>
                 </ul>
               </div>
             </div>
