@@ -8,11 +8,14 @@ import { Landing } from './components/Landing';
 import { MultiStepForm } from './components/MultiStepForm';
 import { LeadData } from './types';
 
+const PDF_URL = 'https://drive.google.com/file/d/1f_gSDjY2A3Q8isgYqPtl4p6sEOH6Wvd_/view?usp=sharing';
+const isFormRoute = () => ['/formulario', '/formulario-pdf'].includes(window.location.pathname.replace(/\/$/, ''));
+
 export default function App() {
-  const [started, setStarted] = useState(() => window.location.pathname.replace(/\/$/, '') === '/formulario');
+  const [started, setStarted] = useState(isFormRoute);
 
   useEffect(() => {
-    const syncRoute = () => setStarted(window.location.pathname.replace(/\/$/, '') === '/formulario');
+    const syncRoute = () => setStarted(isFormRoute());
     window.addEventListener('popstate', syncRoute);
     return () => window.removeEventListener('popstate', syncRoute);
   }, []);
@@ -38,5 +41,9 @@ export default function App() {
     return <Landing onStart={handleStart} />;
   }
 
-  return <MultiStepForm onSubmit={handleSubmit} onCancel={() => { window.history.pushState(null, '', '/'); setStarted(false); }} />;
+  return <MultiStepForm
+    onSubmit={handleSubmit}
+    successRedirect={window.location.pathname.replace(/\/$/, '') === '/formulario-pdf' ? PDF_URL : undefined}
+    onCancel={() => { window.history.pushState(null, '', '/'); setStarted(false); }}
+  />;
 }

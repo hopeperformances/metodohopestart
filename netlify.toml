@@ -14,3 +14,13 @@
   for = "/formulario"
   [headers.values]
     X-Robots-Tag = "noindex, follow"
+
+[[redirects]]
+  from = "/formulario-pdf"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/formulario-pdf"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"

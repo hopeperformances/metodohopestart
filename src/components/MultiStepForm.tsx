@@ -6,6 +6,7 @@ import { LeadData } from '../types';
 interface MultiStepFormProps {
   onSubmit: (data: LeadData) => Promise<void>;
   onCancel: () => void;
+  successRedirect?: string;
 }
 
 const getSegmentDiagnosis = (segmento: string, empresa: string) => {
@@ -65,7 +66,7 @@ const getSegmentDiagnosis = (segmento: string, empresa: string) => {
   };
 };
 
-export function MultiStepForm({ onSubmit, onCancel }: MultiStepFormProps) {
+export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStepFormProps) {
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<LeadData>({
@@ -128,7 +129,11 @@ export function MultiStepForm({ onSubmit, onCancel }: MultiStepFormProps) {
     setIsSubmitting(true);
     try {
       await onSubmit(data);
-      setStep(99); // success step
+      if (successRedirect) {
+        window.location.assign(successRedirect);
+      } else {
+        setStep(99); // success step
+      }
     } catch (e: any) {
       console.error(e);
       alert(e.message || 'Ocorreu um erro ao enviar os dados. Tente novamente.');
