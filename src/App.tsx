@@ -7,9 +7,10 @@ import React, { useEffect, useState } from 'react';
 import { Landing } from './components/Landing';
 import { MultiStepForm } from './components/MultiStepForm';
 import { LeadData } from './types';
-import { getMetaContext, newEventId, trackFormStart, trackLead } from './lib/metaPixel';
+import { getMetaContext, newEventId, trackFormStart } from './lib/metaPixel';
 
 const PDF_URL = 'https://drive.google.com/file/d/1f_gSDjY2A3Q8isgYqPtl4p6sEOH6Wvd_/view?usp=sharing';
+const isPdfRoute = () => window.location.pathname.replace(/\/$/, '') === '/formulario-pdf';
 const isFormRoute = () => ['/formulario', '/formulario-pdf'].includes(window.location.pathname.replace(/\/$/, ''));
 
 export default function App() {
@@ -32,14 +33,16 @@ export default function App() {
     const response = await fetch('/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, meta: getMetaContext(eventId) })
+      // /formulario-pdf redirects without the success screen, so no Lead there.
+      body: JSON.stringify(isPdfRoute() ? data : { ...data, meta: getMetaContext(eventId) })
     });
     const result = await response.json().catch(() => null);
     if (!response.ok || result?.success !== true) {
       throw new Error(result?.error || 'Não foi possível enviar os dados. Tente novamente.');
     }
-    // Conversion: only counted once the lead was actually delivered.
-    trackLead(eventId);
+    // The Lead conversion is fired by MultiStepForm only when the success
+    // screen (diagnóstico) is actually shown, with this same event_id.
+    return eventId;
   };
 
   if (!started) {
