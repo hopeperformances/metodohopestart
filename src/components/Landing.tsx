@@ -7,6 +7,9 @@ interface LandingProps {
   onStart: () => void;
 }
 
+// Google palette, used for the segment icon chips
+const SEGMENT_ACCENTS = ['#4285F4', '#EA4335', '#F9AB00', '#34A853'];
+
 const SEGMENTS = [
   {
     title: 'Área da Saúde',
@@ -466,115 +469,98 @@ export function Landing({ onStart }: LandingProps) {
       </section>
 
       {/* Método Ideal Para Section */}
-      <section id="segmentos" className="py-12 md:py-16 bg-[#0a2618] text-white relative overflow-hidden border-y border-emerald-900/40">
-        {/* Lights / Ambient Glows / Gradients */}
-        <div className="absolute inset-0 z-0">
-          {/* Subtle grid pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#103523_1px,transparent_1px),linear-gradient(to_bottom,#103523_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-30"></div>
-          {/* Main green glow in center */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none"></div>
-          {/* Accent glowing lights */}
-          <div className="absolute -top-10 left-10 w-[250px] h-[250px] bg-emerald-400/5 rounded-full blur-[100px] pointer-events-none"></div>
-          <div className="absolute -bottom-10 right-10 w-[300px] h-[300px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <section id="segmentos" className="py-14 md:py-20 bg-[#F4F7FB] relative overflow-hidden border-y border-slate-200/70">
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-[360px] h-[360px] bg-[#4285F4]/10 rounded-full blur-[110px]"></div>
+          <div className="absolute -bottom-24 -left-24 w-[320px] h-[320px] bg-[#34A853]/10 rounded-full blur-[110px]"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-          <div className="text-center max-w-4xl mx-auto mb-8 sm:mb-10">
-            <h2 className="text-xs font-bold text-[#10b981] uppercase tracking-widest mb-1">Método Ideal Para</h2>
-            <h3 className="text-2xl sm:text-3xl lg:text-5xl font-display font-extrabold text-white mb-3 lg:mb-2 leading-tight tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
+            <p className="text-xs font-bold text-[#4285F4] uppercase tracking-widest mb-2">Método Ideal Para</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-display font-extrabold text-slate-900 mb-3 leading-tight tracking-tight">
               Quem precisa do Método Hope Start?
-            </h3>
-            <p className="text-xs sm:text-sm lg:text-lg text-emerald-100/70 font-medium leading-relaxed max-w-2xl mx-auto">
-              O posicionamento estratégico no Google é a forma mais inteligente e sustentável de atrair clientes qualificados todos os dias. Descubra se seu segmento faz parte:
+            </h2>
+            <p className="text-sm sm:text-base lg:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              O posicionamento estratégico no Google é a forma mais inteligente e sustentável de atrair clientes qualificados todos os dias. Toque no seu segmento:
             </p>
           </div>
 
-          {/* Layout Horizontal Otimizado */}
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-            {/* Abas / Categorias (Lateral Esquerda no Desktop, Grid no Mobile) */}
-            <div className="w-full lg:w-1/3 flex flex-col gap-2">
-              {/* Clique para ver mais Hint (Only on Mobile/Tablet) */}
-              <div className="lg:hidden flex items-center justify-center mb-1">
-                <span className="text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider animate-pulse flex items-center gap-1.5 bg-emerald-950/40 border border-emerald-500/15 px-3 py-1 rounded-full shadow-lg backdrop-blur-md">
-                  <span>Clique para ver mais</span>
-                  <span
-                    className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping opacity-75"
-                  />
-                </span>
-              </div>
-              <div className="grid grid-cols-2 lg:flex lg:flex-col gap-2 sm:gap-2.5 lg:gap-2">
+          <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 items-start">
+            {/* Categorias */}
+            <div className="w-full lg:w-[38%]" role="tablist" aria-label="Segmentos atendidos">
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 sm:gap-3">
                 {SEGMENTS.map((segment, index) => {
                   const IconComponent = segment.icon;
                   const isActive = activeSegment === index;
+                  const accent = SEGMENT_ACCENTS[index % SEGMENT_ACCENTS.length];
                   return (
                     <button
                       key={index}
+                      role="tab"
+                      aria-selected={isActive}
                       onClick={() => setActiveSegment(index)}
-                      className={`flex items-center gap-2 sm:gap-3 px-2.5 py-2.5 sm:px-4 sm:py-3 lg:px-4 lg:py-2.5 rounded-xl sm:rounded-2xl border transition-all duration-300 text-left w-full min-w-0 ${
+                      className={`group flex items-center gap-2.5 sm:gap-3 min-h-[60px] px-3 py-3 sm:px-4 rounded-2xl border-2 text-left w-full min-w-0 transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4285F4] focus-visible:ring-offset-2 ${
                         isActive
-                          ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-950/50 scale-[1.01]'
-                          : 'bg-[#07140D]/30 border-emerald-950/50 text-emerald-100/60 hover:bg-emerald-950/20 hover:text-emerald-100/90'
+                          ? 'bg-[#4285F4] border-[#4285F4] text-white shadow-lg shadow-[#4285F4]/30'
+                          : 'bg-white border-slate-200 text-slate-800 shadow-sm hover:border-[#4285F4]/60 hover:shadow-md'
                       }`}
                     >
-                      <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl border transition-colors flex-shrink-0 ${
-                        isActive 
-                          ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-300' 
-                          : 'bg-emerald-950/40 border-emerald-900/30 text-emerald-500/80'
-                      }`}>
-                        <IconComponent className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                      </div>
-                      <span className="font-bold text-[10.5px] sm:text-xs md:text-sm lg:text-base tracking-wide leading-tight">{segment.title}</span>
+                      <span
+                        className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex-shrink-0 transition-colors ${isActive ? 'bg-white/20 text-white' : ''}`}
+                        style={isActive ? undefined : { backgroundColor: `${accent}1A`, color: accent }}
+                      >
+                        <IconComponent className="w-5 h-5" />
+                      </span>
+                      <span className="flex-1 font-bold text-[13px] sm:text-sm lg:text-base leading-tight">{segment.title}</span>
+                      <ChevronRight className={`hidden sm:block w-4 h-4 flex-shrink-0 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-400 group-hover:translate-x-0.5'}`} />
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Painel de Conteúdo Horizontal (Direita) */}
-            <div className="w-full lg:w-2/3">
-              <div className="bg-[#07140D]/80 backdrop-blur-md border border-emerald-950 rounded-2xl sm:rounded-3xl p-5 lg:p-8 shadow-2xl relative overflow-hidden group lg:min-h-[350px] flex flex-col justify-center">
-                {/* Subtle back illumination inside the card */}
-                <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-[80px] pointer-events-none"></div>
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3.5 lg:gap-5 mb-3 sm:mb-5">
-                    <div className="w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-500/5">
-                      {React.createElement(SEGMENTS[activeSegment].icon, { className: "w-5.5 h-5.5 sm:w-7 h-7 lg:w-8 lg:h-8 text-emerald-400" })}
-                    </div>
-                    <div>
-                      <span className="text-[9px] lg:text-xs font-bold text-emerald-400 uppercase tracking-widest block mb-0.5">Segmento Ativo</span>
-                      <h4 className="font-display font-extrabold text-base sm:text-xl lg:text-2xl text-white">{SEGMENTS[activeSegment].title}</h4>
-                    </div>
+            {/* Painel do segmento */}
+            <div className="w-full lg:w-[62%]" role="tabpanel">
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 lg:p-8 shadow-xl shadow-slate-200/60 lg:min-h-[400px]">
+                <div className="flex items-center gap-3.5 lg:gap-4 mb-4">
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl bg-[#4285F4]/10 flex items-center justify-center flex-shrink-0">
+                    {React.createElement(SEGMENTS[activeSegment].icon, { className: 'w-6 h-6 lg:w-7 lg:h-7 text-[#4285F4]' })}
                   </div>
+                  <div>
+                    <span className="text-[11px] lg:text-xs font-bold text-[#4285F4] uppercase tracking-widest block mb-0.5">Segmento selecionado</span>
+                    <h3 className="font-display font-extrabold text-lg sm:text-xl lg:text-2xl text-slate-900">{SEGMENTS[activeSegment].title}</h3>
+                  </div>
+                </div>
 
-                  <p className="text-emerald-100/70 text-xs sm:text-sm lg:text-base mb-4 sm:mb-5 leading-relaxed max-w-2xl font-medium">
-                    {SEGMENTS[activeSegment].description}
-                  </p>
+                <p className="text-slate-600 text-sm sm:text-base mb-5 leading-relaxed">
+                  {SEGMENTS[activeSegment].description}
+                </p>
 
-                  <div className="border-t border-emerald-950/60 pt-4 sm:pt-5">
-                    <h5 className="text-[9px] lg:text-xs font-bold text-emerald-500/80 uppercase tracking-wider mb-2.5">Exemplos de negócios locais atendidos:</h5>
-                    <div className="flex flex-wrap gap-1.5">
-                      {SEGMENTS[activeSegment].items.map((item, idx) => (
-                        <span 
-                          key={idx} 
-                          className="bg-emerald-950/40 text-emerald-300/90 border border-emerald-900/50 rounded-full px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-semibold hover:bg-emerald-900/40 hover:text-emerald-200 transition-colors cursor-default"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
+                <div className="border-t border-slate-100 pt-5">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Exemplos de negócios locais atendidos:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {SEGMENTS[activeSegment].items.map((item, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-slate-100 text-slate-700 rounded-full px-3 py-1 text-xs sm:text-sm font-semibold"
+                      >
+                        {item}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 lg:mt-6 text-center">
-            <button 
-              onClick={onStart} 
-              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 sm:px-10 sm:py-4.5 bg-[#34A853] text-white rounded-full font-bold text-sm sm:text-base lg:text-xl hover:bg-[#2e9347] transition-all duration-300 shadow-xl shadow-emerald-500/10 hover:shadow-emerald-500/25 hover:-translate-y-0.5"
+          <div className="mt-8 lg:mt-10 text-center">
+            <button
+              onClick={onStart}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 sm:px-10 bg-[#4285F4] text-white rounded-full font-bold text-base lg:text-xl hover:bg-[#3367D6] transition-all duration-300 shadow-xl shadow-[#4285F4]/25 hover:-translate-y-0.5"
             >
               Quero Destacar Meu Segmento
+              <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -631,59 +617,6 @@ export function Landing({ onStart }: LandingProps) {
             <button onClick={onStart} className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 sm:px-10 sm:py-5 bg-[#EA4335] text-white rounded-full font-bold text-sm sm:text-xl hover:bg-[#d93025] hover:scale-102 transition-all shadow-xl shadow-[#EA4335]/20 animate-pulse">
               Descubra Seu Potencial Agora
             </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Compromisso de Exclusividade */}
-      <section id="exclusividade" className="py-12 sm:py-16 bg-gradient-to-b from-[#5c0d0d] via-[#3a0606] to-[#1e0202] text-white relative overflow-hidden border-t border-red-900/60">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 opacity-[0.12] pointer-events-none">
-          <div className="absolute -top-12 -left-12 w-96 h-96 bg-red-600 rounded-full blur-[120px]"></div>
-          <div className="absolute -bottom-12 -right-12 w-96 h-96 bg-[#FBBC05] rounded-full blur-[120px]"></div>
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 relative z-10 text-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-[#FBBC05] border border-[#FBBC05]/40 text-[10px] sm:text-xs font-black uppercase tracking-wider mb-4 sm:mb-5 animate-pulse shadow-lg shadow-amber-500/5">
-            ⚠️ EXCLUSIVIDADE GEOGRÁFICA GARANTIDA
-          </span>
-          <h2 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-display font-extrabold uppercase tracking-wider text-white mb-3 sm:mb-4">
-            APENAS <span className="text-[#FBBC05] bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">1 PARCEIRO</span> POR SEGMENTO NA SUA REGIÃO
-          </h2>
-          <p className="text-xs sm:text-sm lg:text-lg text-amber-100/80 font-medium max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed">
-            Não jogamos nos dois lados. Se fecharmos com você, seus concorrentes locais estão terminantemente bloqueados. O primeiro que fechar garante o monopólio regional.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto text-left">
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl p-5 sm:p-6 hover:border-[#FBBC05]/40 transition-all hover:-translate-y-0.5 duration-300">
-              <div className="flex items-center gap-2 text-[#FBBC05] font-bold text-sm sm:text-base mb-1.5 sm:mb-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FBBC05] animate-pulse"></div>
-                Garantia em Contrato
-              </div>
-              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-                Proteção jurídica de que recusaremos o atendimento a qualquer outra empresa do seu segmento no seu raio local.
-              </p>
-            </div>
-
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl p-5 sm:p-6 hover:border-[#FBBC05]/40 transition-all hover:-translate-y-0.5 duration-300">
-              <div className="flex items-center gap-2 text-[#FBBC05] font-bold text-sm sm:text-base mb-1.5 sm:mb-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FBBC05]"></div>
-                Foco no Seu Crescimento
-              </div>
-              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-                100% da nossa força e inteligência estratégica regional serão usadas exclusivamente para destacar a sua empresa.
-              </p>
-            </div>
-
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl p-5 sm:p-6 hover:border-[#FBBC05]/40 transition-all hover:-translate-y-0.5 duration-300">
-              <div className="flex items-center gap-2 text-[#FBBC05] font-bold text-sm sm:text-base mb-1.5 sm:mb-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FBBC05] animate-pulse"></div>
-                Ordem de Chegada
-              </div>
-              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-                A vaga é garantida por quem age rápido. Se o seu concorrente fechar primeiro, sua empresa perde o acesso.
-              </p>
-            </div>
           </div>
         </div>
       </section>
