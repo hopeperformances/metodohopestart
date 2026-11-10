@@ -178,7 +178,6 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
             <label htmlFor="f-nome" className={labelClass}>Seu nome</label>
             <input
               id="f-nome"
-              autoFocus
               type="text"
               autoComplete="name"
               value={data.nome}
@@ -215,7 +214,6 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
       subtitle: 'Ex.: Serviços Elétricos, Psicólogo, Advogado, Marmoraria, Esteticista, etc...',
       render: () => (
         <input
-          autoFocus
           type="text"
           value={data.segmento}
           onChange={e => setData({ ...data, segmento: e.target.value })}
@@ -237,7 +235,6 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
             <label htmlFor="f-empresa" className={labelClass}>Nome da empresa</label>
             <input
               id="f-empresa"
-              autoFocus
               type="text"
               autoComplete="organization"
               value={data.empresa}
@@ -277,7 +274,6 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
             <label htmlFor="f-cidade" className={labelClass}>Cidade - UF</label>
             <input
               id="f-cidade"
-              autoFocus
               type="text"
               autoComplete="address-level2"
               value={data.cidade}
