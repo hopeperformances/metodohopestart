@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ArrowLeft, CheckCircle2, Loader2, Send, X, Check, Award, ArrowUpRight } from 'lucide-react';
 import { LeadData } from '../types';
-import { trackLead } from '../lib/metaPixel';
+import { trackLead, trackQualifiedLead } from '../lib/metaPixel';
 
 interface MultiStepFormProps {
   onSubmit: (data: LeadData) => Promise<string>; // resolves with the Meta event_id
+  onPartial?: (data: Pick<LeadData, 'nome' | 'whatsapp'>) => void; // name + WhatsApp saved after step 1
   onCancel: () => void;
   successRedirect?: string;
 }
@@ -67,16 +68,18 @@ const getSegmentDiagnosis = (segmento: string, empresa: string) => {
   };
 };
 
-export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStepFormProps) {
+export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }: MultiStepFormProps) {
   const [step, setStep] = useState(0);
   const leadEventId = useRef<string | null>(null);
   const leadTracked = useRef(false);
+  const partialSent = useRef(false);
 
   // Meta Lead conversion: fired once, only when the success screen is shown.
   useEffect(() => {
     if (step === 99 && leadEventId.current && !leadTracked.current) {
       leadTracked.current = true;
       trackLead(leadEventId.current);
+      if (data.aceitaCall === 'sim') trackQualifiedLead(leadEventId.current);
     }
   }, [step]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,6 +88,7 @@ export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStep
     segmento: '',
     empresa: '',
     cep: '',
+    cidade: '',
     endereco: '',
     numero: '',
     complemento: '',
@@ -97,6 +101,10 @@ export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStep
   const [cepError, setCepError] = useState('');
 
   const handleNext = () => {
+    if (step === 0 && onPartial && !partialSent.current) {
+      partialSent.current = true;
+      onPartial({ nome: data.nome.trim(), whatsapp: data.whatsapp });
+    }
     if (step < questions.length - 1) {
       setStep(s => s + 1);
     } else {
@@ -126,7 +134,8 @@ export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStep
       } else {
         setData(d => ({
           ...d,
-          endereco: `${json.logradouro}, ${json.bairro}, ${json.localidade} - ${json.uf}, Brasil`
+          endereco: [json.logradouro, json.bairro].filter(Boolean).join(', '),
+          cidade: `${json.localidade} - ${json.uf}`
         }));
       }
     } catch (e) {
@@ -153,180 +162,204 @@ export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStep
     }
   };
 
+  const inputClass = "w-full px-0 py-2.5 sm:py-3 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-base sm:text-xl transition-all placeholder:text-slate-300";
+  const labelClass = "text-xs sm:text-sm font-bold text-slate-500 mb-1 block";
+  const optionalTag = <span className="font-medium text-slate-400">(opcional)</span>;
+
   const questions = [
     {
-      id: 'nome',
-      title: 'Seu Nome Completo',
+      id: 'contato',
+      label: 'Contato',
+      title: 'Para quem enviamos sua análise gratuita?',
+      subtitle: 'Leva menos de 1 minuto. A análise chega no seu WhatsApp.',
       render: () => (
-        <input 
-          autoFocus
-          type="text" 
-          value={data.nome}
-          onChange={e => setData({...data, nome: e.target.value})}
-          placeholder="Ex: João da Silva"
-          className="w-full px-0 py-2.5 sm:py-4 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-base sm:text-xl transition-all placeholder:text-slate-300"
-          onKeyDown={e => e.key === 'Enter' && data.nome && handleNext()}
-        />
+        <div className="flex flex-col gap-5 w-full">
+          <div>
+            <label htmlFor="f-nome" className={labelClass}>Seu nome</label>
+            <input
+              id="f-nome"
+              autoFocus
+              type="text"
+              autoComplete="name"
+              value={data.nome}
+              onChange={e => setData({ ...data, nome: e.target.value })}
+              placeholder="Ex: João da Silva"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="f-whats" className={labelClass}>WhatsApp com DDD</label>
+            <div className="flex items-end gap-2.5 w-full border-b-2 border-slate-200 focus-within:border-[#4285F4] transition-colors">
+              <span className="py-2.5 sm:py-3 text-base sm:text-xl font-medium text-slate-500 whitespace-nowrap">🇧🇷 +55</span>
+              <input
+                id="f-whats"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel-national"
+                value={data.whatsapp}
+                onChange={e => setData({ ...data, whatsapp: e.target.value.replace(/\D/g, '').slice(0, 11) })}
+                placeholder="47 99999-9999"
+                className="flex-1 min-w-0 px-0 py-2.5 sm:py-3 bg-transparent outline-none text-base sm:text-xl placeholder:text-slate-300"
+                onKeyDown={e => e.key === 'Enter' && questions[0].isValid() && handleNext()}
+              />
+            </div>
+          </div>
+        </div>
       ),
-      isValid: () => data.nome.trim().length > 2
+      isValid: () => data.nome.trim().length > 2 && /^\d{10,11}$/.test(data.whatsapp)
     },
     {
       id: 'segmento',
+      label: 'Segmento',
       title: 'Qual seu segmento de atuação?',
       subtitle: 'Ex.: Serviços Elétricos, Psicólogo, Advogado, Marmoraria, Esteticista, etc...',
       render: () => (
-        <input 
+        <input
           autoFocus
-          type="text" 
+          type="text"
           value={data.segmento}
-          onChange={e => setData({...data, segmento: e.target.value})}
+          onChange={e => setData({ ...data, segmento: e.target.value })}
           placeholder="Digite seu segmento"
-          className="w-full px-0 py-2.5 sm:py-4 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-base sm:text-xl transition-all placeholder:text-slate-300"
-          onKeyDown={e => e.key === 'Enter' && data.segmento && handleNext()}
+          className={inputClass}
+          onKeyDown={e => e.key === 'Enter' && data.segmento.trim().length > 2 && handleNext()}
         />
       ),
       isValid: () => data.segmento.trim().length > 2
     },
     {
       id: 'empresa',
-      title: 'Nome da Sua Empresa/Negócio',
+      label: 'Empresa',
+      title: 'Qual o nome da sua empresa?',
+      subtitle: 'É assim que vamos encontrar seu negócio no Google.',
       render: () => (
-        <input 
-          autoFocus
-          type="text" 
-          value={data.empresa}
-          onChange={e => setData({...data, empresa: e.target.value})}
-          placeholder="Ex: JS Instalações"
-          className="w-full px-0 py-2.5 sm:py-4 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-base sm:text-xl transition-all placeholder:text-slate-300"
-          onKeyDown={e => e.key === 'Enter' && data.empresa && handleNext()}
-        />
+        <div className="flex flex-col gap-5 w-full">
+          <div>
+            <label htmlFor="f-empresa" className={labelClass}>Nome da empresa</label>
+            <input
+              id="f-empresa"
+              autoFocus
+              type="text"
+              autoComplete="organization"
+              value={data.empresa}
+              onChange={e => setData({ ...data, empresa: e.target.value })}
+              placeholder="Ex: JS Instalações"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="f-insta" className={labelClass}>Instagram {optionalTag}</label>
+            <div className="flex items-center w-full border-b-2 border-slate-200 focus-within:border-[#4285F4] transition-colors">
+              <span className="text-base sm:text-xl text-slate-400 py-2.5 sm:py-3 pr-1.5 font-bold">@</span>
+              <input
+                id="f-insta"
+                type="text"
+                autoCapitalize="none"
+                value={data.instagram}
+                onChange={e => setData({ ...data, instagram: e.target.value.replace(/[@\s]/g, '') })}
+                placeholder="sua_empresa"
+                className="flex-1 min-w-0 px-0 py-2.5 sm:py-3 bg-transparent outline-none text-base sm:text-xl placeholder:text-slate-300"
+                onKeyDown={e => e.key === 'Enter' && data.empresa.trim().length > 1 && handleNext()}
+              />
+            </div>
+          </div>
+        </div>
       ),
-      isValid: () => data.empresa.trim().length > 1
+      isValid: () => data.empresa.trim().length > 1 && (!data.instagram || /^[A-Za-z0-9._]{2,30}$/.test(data.instagram))
     },
     {
-      id: 'endereco',
-      title: 'Endereço Completo',
+      id: 'local',
+      label: 'Cidade',
+      title: 'Em qual cidade fica sua empresa?',
+      subtitle: 'O Google mostra resultados por região. É com isso que montamos sua análise.',
       render: () => (
-        <div className="flex flex-col gap-4 sm:gap-6 w-full">
+        <div className="flex flex-col gap-5 w-full">
           <div>
-            <label className="text-xs sm:text-sm font-bold text-slate-500 mb-1 block">CEP</label>
-            <input 
+            <label htmlFor="f-cidade" className={labelClass}>Cidade - UF</label>
+            <input
+              id="f-cidade"
               autoFocus
-              type="text" 
+              type="text"
+              autoComplete="address-level2"
+              value={data.cidade}
+              onChange={e => setData({ ...data, cidade: e.target.value })}
+              placeholder="Ex: Brusque - SC"
+              className={inputClass}
+              onKeyDown={e => e.key === 'Enter' && data.cidade.trim().length > 2 && handleNext()}
+            />
+          </div>
+          <div>
+            <label htmlFor="f-cep" className={labelClass}>CEP {optionalTag}</label>
+            <input
+              id="f-cep"
+              type="text"
+              inputMode="numeric"
+              autoComplete="postal-code"
               value={data.cep}
               onChange={e => {
-                const val = e.target.value;
-                setData({...data, cep: val});
-                if (val.replace(/\D/g, '').length === 8) {
-                  fetchCep(val);
-                }
+                const val = e.target.value.replace(/[^\d-]/g, '').slice(0, 9);
+                setData({ ...data, cep: val });
+                if (val.replace(/\D/g, '').length === 8) fetchCep(val);
               }}
-              placeholder="00000-000"
-              className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-base sm:text-xl transition-all placeholder:text-slate-300"
+              placeholder="Só se tiver endereço físico"
+              className={inputClass}
             />
-            {cepLoading && <p className="text-xs sm:text-sm text-[#4285F4] mt-1.5 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin"/> Buscando...</p>}
+            {cepLoading && <p className="text-xs sm:text-sm text-[#4285F4] mt-1.5 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Buscando...</p>}
             {cepError && <p className="text-xs sm:text-sm text-[#EA4335] mt-1.5">{cepError}</p>}
           </div>
-          
           {data.endereco && (
-            <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="flex flex-col gap-3 sm:gap-4">
-              <div>
-                <label className="text-xs sm:text-sm font-bold text-slate-500 mb-1 block">Endereço (Rua, Bairro, Cidade, Estado)</label>
-                <input 
-                  type="text" 
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="flex gap-3 sm:gap-4">
+              <div className="flex-[2] min-w-0">
+                <label htmlFor="f-end" className={labelClass}>Endereço</label>
+                <input
+                  id="f-end"
+                  type="text"
                   value={data.endereco}
-                  onChange={e => setData({...data, endereco: e.target.value})}
-                  className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-sm sm:text-lg transition-all text-slate-700"
+                  onChange={e => setData({ ...data, endereco: e.target.value })}
+                  className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-sm sm:text-lg text-slate-700"
                 />
               </div>
-              <div className="flex gap-3 sm:gap-4">
-                <div className="flex-1">
-                  <label className="text-xs sm:text-sm font-bold text-slate-500 mb-1 block">Número</label>
-                  <input 
-                    type="text" 
-                    value={data.numero}
-                    onChange={e => setData({...data, numero: e.target.value})}
-                    placeholder="Ex: 123"
-                    className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-sm sm:text-lg transition-all placeholder:text-slate-300"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="text-xs sm:text-sm font-bold text-slate-500 mb-1 block">Complemento</label>
-                  <input 
-                    type="text" 
-                    value={data.complemento}
-                    onChange={e => setData({...data, complemento: e.target.value})}
-                    placeholder="Opcional"
-                    className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-sm sm:text-lg transition-all placeholder:text-slate-300"
-                    onKeyDown={e => e.key === 'Enter' && data.numero && handleNext()}
-                  />
-                </div>
+              <div className="flex-1 min-w-0">
+                <label htmlFor="f-num" className={labelClass}>Número</label>
+                <input
+                  id="f-num"
+                  type="text"
+                  value={data.numero}
+                  onChange={e => setData({ ...data, numero: e.target.value })}
+                  placeholder="Ex: 123"
+                  className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-sm sm:text-lg placeholder:text-slate-300"
+                />
               </div>
             </motion.div>
           )}
         </div>
       ),
-      isValid: () => data.cep.length >= 8 && data.endereco.length > 5 && data.numero.length > 0
+      isValid: () => data.cidade.trim().length > 2
     },
     {
-      id: 'whatsapp',
-      title: 'WhatsApp com DDD',
-      render: () => (
-        <div className="flex items-end gap-2.5 sm:gap-3 w-full">
-          <div className="flex items-center gap-1 sm:gap-2 border-b-2 border-slate-200 py-2.5 sm:py-4 px-0 focus-within:border-[#4285F4] transition-colors">
-            <select className="bg-transparent text-base sm:text-xl font-medium text-slate-700 outline-none cursor-pointer appearance-none">
-              <option value="br">🇧🇷 +55</option>
-              <option value="us">🇺🇸 +1</option>
-              <option value="pt">🇵🇹 +351</option>
-            </select>
-          </div>
-          <input 
-            autoFocus
-            type="tel" 
-            value={data.whatsapp}
-            onChange={e => {
-              const val = e.target.value.replace(/\D/g, '');
-              setData({...data, whatsapp: val});
-            }}
-            placeholder="11 99999-9999"
-            className="flex-1 px-0 py-2.5 sm:py-4 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-base sm:text-xl transition-all placeholder:text-slate-300"
-            onKeyDown={e => e.key === 'Enter' && data.whatsapp.length >= 10 && handleNext()}
-          />
-        </div>
-      ),
-      isValid: () => data.whatsapp.replace(/\D/g, '').length >= 10
-    },
-    {
-      id: 'instagram',
-      title: 'Instagram',
-      render: () => (
-        <div className="flex items-center w-full border-b-2 border-slate-200 focus-within:border-[#4285F4] transition-colors">
-          <span className="text-base sm:text-xl text-slate-400 py-2.5 sm:py-4 pr-1.5 sm:pr-2 font-bold">@</span>
-          <input 
-            autoFocus
-            type="text" 
-            value={data.instagram}
-            onChange={e => setData({...data, instagram: e.target.value.replace('@', '')})}
-            placeholder="sua_empresa"
-            className="flex-1 px-0 py-2.5 sm:py-4 bg-transparent outline-none text-base sm:text-xl placeholder:text-slate-300"
-            onKeyDown={e => e.key === 'Enter' && data.instagram && handleNext()}
-          />
-        </div>
-      ),
-      isValid: () => data.instagram.trim().length > 1
-    },
-    {
-      id: 'call',
-      title: 'Ao receber o diagnóstico, você aceita participar de uma call de aproximadamente 15 minutos, sem compromisso, para eu te mostrar como poderia ajudar seu negócio?',
+      id: 'preferencia',
+      label: 'Análise',
+      title: 'Como você prefere receber sua análise?',
       render: () => (
         <fieldset className="flex flex-col gap-3">
-          <legend className="sr-only">Você aceita participar da call?</legend>
-          {([{ value: 'sim', label: 'Sim' }, { value: 'nao', label: 'Não' }] as const).map(option => (
-            <label key={option.value} className={`flex items-center gap-3 rounded-xl border-2 p-4 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-[#4285F4] focus-within:ring-offset-2 ${data.aceitaCall === option.value ? 'border-[#4285F4] bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}>
-              <input type="radio" name="aceitaCall" value={option.value} checked={data.aceitaCall === option.value} onChange={() => setData({ ...data, aceitaCall: option.value })} className="h-5 w-5 accent-[#4285F4]" />
-              <span className="text-base sm:text-lg font-semibold">{option.label}</span>
+          <legend className="sr-only">Como você prefere receber sua análise?</legend>
+          {([
+            { value: 'sim', label: 'Em uma call rápida de 15 minutos', desc: 'Mostro sua análise ao vivo e tiro suas dúvidas. Sem compromisso.', badge: 'Recomendado' },
+            { value: 'nao', label: 'Por mensagem no WhatsApp', desc: 'Envio o resumo da análise direto no seu WhatsApp.', badge: '' }
+          ] as const).map(option => (
+            <label key={option.value} className={`flex items-start gap-3 rounded-2xl border-2 p-4 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-[#4285F4] focus-within:ring-offset-2 ${data.aceitaCall === option.value ? 'border-[#4285F4] bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}>
+              <input type="radio" name="aceitaCall" value={option.value} checked={data.aceitaCall === option.value} onChange={() => setData({ ...data, aceitaCall: option.value })} className="mt-1 h-5 w-5 accent-[#4285F4] flex-shrink-0" />
+              <span className="flex flex-col gap-1">
+                <span className="flex flex-wrap items-center gap-2 text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                  {option.label}
+                  {option.badge && <span className="text-[10px] font-bold uppercase tracking-wider bg-[#34A853] text-white rounded-full px-2 py-0.5">{option.badge}</span>}
+                </span>
+                <span className="text-sm text-slate-500 leading-snug">{option.desc}</span>
+              </span>
             </label>
           ))}
+          <p className="text-xs text-slate-400 leading-relaxed mt-1">
+            Ao finalizar, você concorda em ser contatado pela Hope Performance Digitais no WhatsApp informado, apenas sobre a sua análise.
+          </p>
         </fieldset>
       ),
       isValid: () => data.aceitaCall === 'sim' || data.aceitaCall === 'nao'
@@ -505,7 +538,7 @@ export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStep
                     )}
                   </motion.div>
                   <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-tight hidden sm:inline ${isActive ? 'text-[#4285F4]' : isCompleted ? 'text-emerald-600' : 'text-slate-400'}`}>
-                    {q.id === 'endereco' ? 'Local' : q.id === 'whatsapp' ? 'Whats' : q.id === 'instagram' ? 'Insta' : q.id}
+                    {q.label}
                   </span>
                 </div>
               );
