@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ArrowLeft, CheckCircle2, Loader2, Send, X, Check, Award, ArrowUpRight } from 'lucide-react';
 import { LeadData } from '../types';
+import { trackLead } from '../lib/metaPixel';
 
 interface MultiStepFormProps {
-  onSubmit: (data: LeadData) => Promise<void>;
+  onSubmit: (data: LeadData) => Promise<string>; // resolves with the Meta event_id
   onCancel: () => void;
   successRedirect?: string;
 }
@@ -68,6 +69,16 @@ const getSegmentDiagnosis = (segmento: string, empresa: string) => {
 
 export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStepFormProps) {
   const [step, setStep] = useState(0);
+  const leadEventId = useRef<string | null>(null);
+  const leadTracked = useRef(false);
+
+  // Meta Lead conversion: fired once, only when the success screen is shown.
+  useEffect(() => {
+    if (step === 99 && leadEventId.current && !leadTracked.current) {
+      leadTracked.current = true;
+      trackLead(leadEventId.current);
+    }
+  }, [step]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<LeadData>({
     nome: '',
@@ -128,10 +139,8 @@ export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStep
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      leadEventId.current = await onSubmit(data);
       if (successRedirect) {
-        // Give the Meta Pixel Lead request time to leave before navigating away.
-        await new Promise(resolve => setTimeout(resolve, 500));
         window.location.assign(successRedirect);
       } else {
         setStep(99); // success step
