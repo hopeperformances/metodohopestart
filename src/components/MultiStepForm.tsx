@@ -130,6 +130,8 @@ export function MultiStepForm({ onSubmit, onCancel, successRedirect }: MultiStep
     try {
       await onSubmit(data);
       if (successRedirect) {
+        // Give the Meta Pixel Lead request time to leave before navigating away.
+        await new Promise(resolve => setTimeout(resolve, 500));
         window.location.assign(successRedirect);
       } else {
         setStep(99); // success step
