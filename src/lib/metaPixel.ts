@@ -38,3 +38,8 @@ export const trackFormStart = () => fbq('trackCustom', 'IniciouFormulario');
 
 export const trackLead = (eventId: string) =>
   fbq('track', 'Lead', { content_name: 'Metodo Hope Start - Analise Gratuita' }, { eventID: eventId });
+
+// Higher-intent signal: the lead chose the 15-minute call. Same event_id
+// suffix as the server copy so Meta deduplicates them.
+export const trackQualifiedLead = (eventId: string) =>
+  fbq('trackCustom', 'LeadQualificado', { content_name: 'Metodo Hope Start - Call 15 min' }, { eventID: `${eventId}-q` });

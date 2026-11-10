@@ -45,12 +45,24 @@ export default function App() {
     return eventId;
   };
 
+  // Saves name + WhatsApp as soon as step 1 is done, so abandoned forms still
+  // reach Telegram. Fire-and-forget: never blocks or breaks the form.
+  const handlePartial = (data: Pick<LeadData, 'nome' | 'whatsapp'>) => {
+    fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parcial: true, nome: data.nome, whatsapp: data.whatsapp }),
+      keepalive: true
+    }).catch(() => {});
+  };
+
   if (!started) {
     return <Landing onStart={handleStart} />;
   }
 
   return <MultiStepForm
     onSubmit={handleSubmit}
+    onPartial={handlePartial}
     successRedirect={window.location.pathname.replace(/\/$/, '') === '/formulario-pdf' ? PDF_URL : undefined}
     onCancel={() => { window.history.pushState(null, '', '/'); setStarted(false); }}
   />;

@@ -27,21 +27,22 @@ const sendMetaLead = async (req: Request, data: Record<string, string>, meta: Re
   if (!eventId) return;
 
   const names = data.nome.toLowerCase().split(/\s+/).filter(Boolean);
-  // endereco comes from ViaCEP as "Rua, Bairro, Cidade - UF, Brasil"
-  const cityUf = data.endereco.split(',').map(p => p.trim()).find(p => / - [A-Za-z]{2}$/.test(p)) || '';
-  const [city, uf] = cityUf.split(' - ');
+  // cidade is typed as "Brusque - SC", "Brusque/SC" or just "Brusque"
+  const [city = '', ufRaw = ''] = data.cidade.split(/\s*[-\/,]\s*/);
+  const uf = /^[A-Za-z]{2}$/.test(ufRaw) ? ufRaw : '';
+  const cep = data.cep.replace(/\D/g, '');
   const norm = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
 
   const userData: Record<string, unknown> = {
     ph: [await sha256('55' + data.whatsapp)],
     fn: [await sha256(norm(names[0] || ''))],
-    zp: [await sha256(data.cep.replace(/\D/g, ''))],
     country: [await sha256('br')],
     client_ip_address: req.headers.get('x-nf-client-connection-ip') || req.headers.get('x-forwarded-for')?.split(',')[0].trim() || undefined,
     client_user_agent: req.headers.get('user-agent') || undefined,
     fbp: str(meta.fbp, 200) || undefined,
     fbc: str(meta.fbc, 500) || undefined,
   };
+  if (cep.length === 8) userData.zp = [await sha256(cep)];
   if (names.length > 1) userData.ln = [await sha256(norm(names[names.length - 1]))];
   if (city) userData.ct = [await sha256(norm(city))];
   if (uf) userData.st = [await sha256(uf.toLowerCase())];
@@ -57,6 +58,15 @@ const sendMetaLead = async (req: Request, data: Record<string, string>, meta: Re
       custom_data: { content_name: 'Metodo Hope Start - Analise Gratuita' },
     }],
   };
+  if (data.aceitaCall === 'sim') {
+    const lead = (payload.data as Record<string, unknown>[])[0];
+    (payload.data as Record<string, unknown>[]).push({
+      ...lead,
+      event_name: 'LeadQualificado',
+      event_id: `${eventId}-q`,
+      custom_data: { content_name: 'Metodo Hope Start - Call 15 min' },
+    });
+  }
   const testCode = Netlify.env.get('META_TEST_EVENT_CODE');
   if (testCode) payload.test_event_code = testCode;
 
@@ -89,32 +99,53 @@ export default async function submit(req: Request) {
     return json({ error: 'Dados inválidos.' }, 400);
   }
 
-  const fields = ['nome', 'segmento', 'empresa', 'cep', 'endereco', 'numero', 'complemento', 'whatsapp', 'instagram', 'aceitaCall'];
-  const data = Object.fromEntries(fields.map(key => [key, typeof raw[key] === 'string' ? raw[key].trim() : '']));
-  if (Object.values(data).some(value => value.length > 600) ||
-      data.nome.length < 3 || data.segmento.length < 3 || data.empresa.length < 2 ||
-      data.cep.replace(/\D/g, '').length !== 8 || data.endereco.length < 6 || !data.numero ||
-      !/^\d{10,11}$/.test(data.whatsapp) || !/^[A-Za-z0-9._]{2,30}$/.test(data.instagram) ||
-      !['sim', 'nao'].includes(data.aceitaCall)) {
-    return json({ error: 'Confira os dados e escolha Sim ou Não para a call.' }, 400);
-  }
-
   const token = Netlify.env.get('TELEGRAM_BOT_TOKEN') || Netlify.env.get('VITE_TELEGRAM_BOT_TOKEN');
   const chatId = Netlify.env.get('TELEGRAM_CHAT_ID') || Netlify.env.get('VITE_TELEGRAM_CHAT_ID');
   if (!token || !chatId) return json({ error: 'Envio indisponível no momento. Tente novamente mais tarde.' }, 503);
 
+  const fields = ['nome', 'segmento', 'empresa', 'cidade', 'cep', 'endereco', 'numero', 'complemento', 'whatsapp', 'instagram', 'aceitaCall'];
+  const data = Object.fromEntries(fields.map(key => [key, typeof raw[key] === 'string' ? raw[key].trim() : '']));
+  if (Object.values(data).some(value => value.length > 600)) return json({ error: 'Dados muito extensos.' }, 413);
+  if (data.nome.length < 3 || !/^\d{10,11}$/.test(data.whatsapp)) {
+    return json({ error: 'Confira seu nome e WhatsApp com DDD.' }, 400);
+  }
   const firstName = data.nome.split(' ')[0];
-  const whatsappLink = `https://wa.me/55${data.whatsapp}/?text=${encodeURIComponent(`Olá ${firstName}, tudo certo?\n\nMeu nome é Smiley Rhuan, e vi que você preencheu o cadastro para conhecer mais do meu método de posicionamento no Google.\n\nAgora é um bom momento para conversarmos sobre esse assunto?`)}`;
-  const formattedAddress = `${data.endereco}, ${data.numero}${data.complemento ? ' - ' + data.complemento : ''}`;
-  const text = `⚡️ <b>NOVO LEAD DISPONÍVEL!</b> ⚡️\n\n` +
-    `👤 <b>Nome:</b> ${escapeHtml(data.nome)}\n` +
-    `💼 <b>Segmento:</b> ${escapeHtml(data.segmento)}\n` +
-    `🏢 <b>Empresa:</b> ${escapeHtml(data.empresa)}\n` +
-    `📍 <b>Endereço:</b> ${escapeHtml(formattedAddress)}\n` +
-    `📱 <b>WhatsApp:</b> +55${data.whatsapp}\n` +
-    `📸 <b>Instagram:</b> https://instagram.com/${data.instagram}\n` +
-    `📞 <b>Aceita call de aproximadamente 15 minutos, sem compromisso:</b> ${data.aceitaCall === 'sim' ? 'Sim' : 'Não'}\n\n` +
-    `🔗 <a href="${escapeHtml(whatsappLink)}"><b>Falar no WhatsApp</b></a>`;
+  const waLink = (message: string) => `https://wa.me/55${data.whatsapp}/?text=${encodeURIComponent(message)}`;
+
+  let text: string;
+  const isPartial = raw.parcial === true;
+  if (isPartial) {
+    // Step 1 only (name + WhatsApp): lets abandoned forms be followed up.
+    const link = waLink(`Olá ${firstName}, tudo certo?\n\nMeu nome é Smiley Rhuan. Vi que você começou o cadastro para a análise gratuita de posicionamento no Google da sua empresa.\n\nQuer que eu te ajude a finalizar por aqui mesmo?`);
+    text = `⏳ <b>LEAD INICIOU O FORMULÁRIO</b> (ainda não finalizou)\n\n` +
+      `👤 <b>Nome:</b> ${escapeHtml(data.nome)}\n` +
+      `📱 <b>WhatsApp:</b> +55${data.whatsapp}\n\n` +
+      `Se não chegar o cadastro completo em alguns minutos, vale chamar:\n` +
+      `🔗 <a href="${escapeHtml(link)}"><b>Falar no WhatsApp</b></a>`;
+  } else {
+    const cepDigits = data.cep.replace(/\D/g, '');
+    if (data.segmento.length < 3 || data.empresa.length < 2 || data.cidade.length < 3 ||
+        (cepDigits && cepDigits.length !== 8) ||
+        (data.instagram && !/^[A-Za-z0-9._]{2,30}$/.test(data.instagram)) ||
+        !['sim', 'nao'].includes(data.aceitaCall)) {
+      return json({ error: 'Confira os dados e escolha como prefere receber sua análise.' }, 400);
+    }
+    const wantsCall = data.aceitaCall === 'sim';
+    const link = waLink(wantsCall
+      ? `Olá ${firstName}, tudo certo?\n\nMeu nome é Smiley Rhuan. Recebi seu cadastro para a análise gratuita de posicionamento no Google da ${data.empresa}, e vi que você prefere uma call rápida de 15 minutos.\n\nQual o melhor horário para você hoje ou amanhã?`
+      : `Olá ${firstName}, tudo certo?\n\nMeu nome é Smiley Rhuan, e vi que você preencheu o cadastro para conhecer mais do meu método de posicionamento no Google.\n\nVou te enviar por aqui a análise da ${data.empresa}. Posso te fazer duas perguntas rápidas antes?`);
+    const address = [data.endereco, data.numero].filter(Boolean).join(', ') + (data.complemento ? ' - ' + data.complemento : '');
+    text = (wantsCall ? `🔥 <b>NOVO LEAD QUENTE: QUER CALL DE 15 MIN</b> 🔥\n\n` : `⚡️ <b>NOVO LEAD DISPONÍVEL!</b> ⚡️\n\n`) +
+      `👤 <b>Nome:</b> ${escapeHtml(data.nome)}\n` +
+      `💼 <b>Segmento:</b> ${escapeHtml(data.segmento)}\n` +
+      `🏢 <b>Empresa:</b> ${escapeHtml(data.empresa)}\n` +
+      `🏙️ <b>Cidade:</b> ${escapeHtml(data.cidade)}\n` +
+      (address ? `📍 <b>Endereço:</b> ${escapeHtml(address)}${cepDigits ? ` (CEP ${cepDigits})` : ''}\n` : '') +
+      `📱 <b>WhatsApp:</b> +55${data.whatsapp}\n` +
+      (data.instagram ? `📸 <b>Instagram:</b> https://instagram.com/${escapeHtml(data.instagram)}\n` : '') +
+      `🎯 <b>Prefere receber a análise:</b> ${wantsCall ? '📞 Call de 15 minutos' : '💬 Por WhatsApp'}\n\n` +
+      `🔗 <a href="${escapeHtml(link)}"><b>Falar no WhatsApp</b></a>`;
+  }
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -129,8 +160,10 @@ export default async function submit(req: Request) {
     return json({ error: 'Não foi possível entregar seus dados. Tente novamente.' }, 502);
   }
 
-  const meta = raw.meta && typeof raw.meta === 'object' && !Array.isArray(raw.meta) ? raw.meta as Record<string, unknown> : {};
-  await sendMetaLead(req, data, meta);
+  if (!isPartial) {
+    const meta = raw.meta && typeof raw.meta === 'object' && !Array.isArray(raw.meta) ? raw.meta as Record<string, unknown> : {};
+    await sendMetaLead(req, data, meta);
+  }
   return json({ success: true });
 }
 
