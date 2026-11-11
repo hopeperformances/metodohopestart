@@ -3,10 +3,11 @@ export interface LeadData {
   segmento: string;
   empresa: string;
   cep: string;
-  cidade: string;
-  endereco: string;
+  rua: string;
   numero: string;
-  complemento: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
   whatsapp: string;
   instagram: string;
   // 'sim' = prefere receber a análise numa call de 15 min; 'nao' = prefere pelo WhatsApp

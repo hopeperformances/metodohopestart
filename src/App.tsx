@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Landing } from './components/Landing';
 import { MultiStepForm } from './components/MultiStepForm';
 import { LeadData } from './types';
@@ -15,6 +15,9 @@ const isFormRoute = () => ['/formulario', '/formulario-pdf'].includes(window.loc
 
 export default function App() {
   const [started, setStarted] = useState(isFormRoute);
+  // Ties the partial (step 1) and the final submission together, so the server
+  // can drop the pending abandonment alert when the form is completed.
+  const leadId = useRef(newEventId());
 
   useEffect(() => {
     const syncRoute = () => setStarted(isFormRoute());
@@ -34,7 +37,7 @@ export default function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // /formulario-pdf redirects without the success screen, so no Lead there.
-      body: JSON.stringify(isPdfRoute() ? data : { ...data, meta: getMetaContext(eventId) })
+      body: JSON.stringify(isPdfRoute() ? { ...data, leadId: leadId.current } : { ...data, leadId: leadId.current, meta: getMetaContext(eventId) })
     });
     const result = await response.json().catch(() => null);
     if (!response.ok || result?.success !== true) {
@@ -45,13 +48,13 @@ export default function App() {
     return eventId;
   };
 
-  // Saves name + WhatsApp as soon as step 1 is done, so abandoned forms still
-  // reach Telegram. Fire-and-forget: never blocks or breaks the form.
+  // Registers name + WhatsApp as soon as step 1 is done. The server only alerts
+  // Telegram if the form is not completed within 5 minutes. Fire-and-forget.
   const handlePartial = (data: Pick<LeadData, 'nome' | 'whatsapp'>) => {
     fetch('/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ parcial: true, nome: data.nome, whatsapp: data.whatsapp }),
+      body: JSON.stringify({ parcial: true, leadId: leadId.current, nome: data.nome, whatsapp: data.whatsapp }),
       keepalive: true
     }).catch(() => {});
   };
