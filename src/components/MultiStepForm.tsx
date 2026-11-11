@@ -73,6 +73,8 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
   const leadEventId = useRef<string | null>(null);
   const leadTracked = useRef(false);
   const partialSent = useRef(false);
+  const ruaRef = useRef<HTMLInputElement>(null);
+  const numeroRef = useRef<HTMLInputElement>(null);
 
   // Meta Lead conversion: fired once, only when the success screen is shown.
   useEffect(() => {
@@ -88,10 +90,11 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
     segmento: '',
     empresa: '',
     cep: '',
-    cidade: '',
-    endereco: '',
+    rua: '',
     numero: '',
-    complemento: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
     whatsapp: '',
     instagram: '',
     aceitaCall: ''
@@ -134,9 +137,13 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
       } else {
         setData(d => ({
           ...d,
-          endereco: [json.logradouro, json.bairro].filter(Boolean).join(', '),
-          cidade: `${json.localidade} - ${json.uf}`
+          rua: json.logradouro || d.rua,
+          bairro: json.bairro || d.bairro,
+          cidade: json.localidade || d.cidade,
+          uf: json.uf || d.uf
         }));
+        // Jump straight to the next field the visitor still has to type.
+        setTimeout(() => (json.logradouro ? numeroRef : ruaRef).current?.focus(), 50);
       }
     } catch (e) {
       setCepError('Erro ao buscar CEP');
@@ -264,72 +271,107 @@ export function MultiStepForm({ onSubmit, onPartial, onCancel, successRedirect }
       isValid: () => data.empresa.trim().length > 1 && (!data.instagram || /^[A-Za-z0-9._]{2,30}$/.test(data.instagram))
     },
     {
-      id: 'local',
-      label: 'Cidade',
-      title: 'Em qual cidade fica sua empresa?',
-      subtitle: 'O Google mostra resultados por região. É com isso que montamos sua análise.',
-      render: () => (
-        <div className="flex flex-col gap-5 w-full">
-          <div>
-            <label htmlFor="f-cidade" className={labelClass}>Cidade - UF</label>
-            <input
-              id="f-cidade"
-              type="text"
-              autoComplete="address-level2"
-              value={data.cidade}
-              onChange={e => setData({ ...data, cidade: e.target.value })}
-              placeholder="Ex: Brusque - SC"
-              className={inputClass}
-              onKeyDown={e => e.key === 'Enter' && data.cidade.trim().length > 2 && handleNext()}
-            />
+      id: 'endereco',
+      label: 'Endereço',
+      title: 'Endereço da sua empresa',
+      subtitle: 'Digite o CEP e preenchemos o resto. Não sabe o CEP? Preencha os campos abaixo.',
+      render: () => {
+        const field = "w-full px-0 py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-base sm:text-lg transition-all placeholder:text-slate-300";
+        return (
+          <div className="grid grid-cols-3 gap-x-4 gap-y-4 w-full">
+            <div className="col-span-3 sm:col-span-2">
+              <label htmlFor="f-cep" className={labelClass}>CEP {optionalTag}</label>
+              <input
+                id="f-cep"
+                type="text"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                value={data.cep}
+                onChange={e => {
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  const val = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+                  setData({ ...data, cep: val });
+                  if (digits.length === 8) fetchCep(digits);
+                }}
+                placeholder="00000-000"
+                className={field}
+              />
+              {cepLoading && <p className="text-xs sm:text-sm text-[#4285F4] mt-1.5 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Buscando endereço...</p>}
+              {cepError && <p className="text-xs sm:text-sm text-[#EA4335] mt-1.5">{cepError}. Preencha os campos abaixo.</p>}
+            </div>
+            <div className="col-span-3">
+              <label htmlFor="f-rua" className={labelClass}>Rua</label>
+              <input
+                id="f-rua"
+                ref={ruaRef}
+                type="text"
+                autoComplete="address-line1"
+                value={data.rua}
+                onChange={e => setData({ ...data, rua: e.target.value })}
+                placeholder="Ex: Rua Hercílio Luz"
+                className={field}
+              />
+            </div>
+            <div className="col-span-1">
+              <label htmlFor="f-num" className={labelClass}>Número</label>
+              <input
+                id="f-num"
+                ref={numeroRef}
+                type="text"
+                inputMode="numeric"
+                value={data.numero}
+                onChange={e => setData({ ...data, numero: e.target.value })}
+                placeholder="123"
+                className={field}
+              />
+            </div>
+            <div className="col-span-2">
+              <label htmlFor="f-bairro" className={labelClass}>Bairro</label>
+              <input
+                id="f-bairro"
+                type="text"
+                value={data.bairro}
+                onChange={e => setData({ ...data, bairro: e.target.value })}
+                placeholder="Ex: Centro"
+                className={field}
+              />
+            </div>
+            <div className="col-span-2">
+              <label htmlFor="f-cidade" className={labelClass}>Cidade</label>
+              <input
+                id="f-cidade"
+                type="text"
+                autoComplete="address-level2"
+                value={data.cidade}
+                onChange={e => setData({ ...data, cidade: e.target.value })}
+                placeholder="Ex: Brusque"
+                className={field}
+              />
+            </div>
+            <div className="col-span-1">
+              <label htmlFor="f-uf" className={labelClass}>UF</label>
+              <input
+                id="f-uf"
+                type="text"
+                autoComplete="address-level1"
+                autoCapitalize="characters"
+                maxLength={2}
+                value={data.uf}
+                onChange={e => setData({ ...data, uf: e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase() })}
+                placeholder="SC"
+                className={field}
+                onKeyDown={e => e.key === 'Enter' && questions[3].isValid() && handleNext()}
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="f-cep" className={labelClass}>CEP {optionalTag}</label>
-            <input
-              id="f-cep"
-              type="text"
-              inputMode="numeric"
-              autoComplete="postal-code"
-              value={data.cep}
-              onChange={e => {
-                const val = e.target.value.replace(/[^\d-]/g, '').slice(0, 9);
-                setData({ ...data, cep: val });
-                if (val.replace(/\D/g, '').length === 8) fetchCep(val);
-              }}
-              placeholder="Só se tiver endereço físico"
-              className={inputClass}
-            />
-            {cepLoading && <p className="text-xs sm:text-sm text-[#4285F4] mt-1.5 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Buscando...</p>}
-            {cepError && <p className="text-xs sm:text-sm text-[#EA4335] mt-1.5">{cepError}</p>}
-          </div>
-          {data.endereco && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="flex gap-3 sm:gap-4">
-              <div className="flex-[2] min-w-0">
-                <label htmlFor="f-end" className={labelClass}>Endereço</label>
-                <input
-                  id="f-end"
-                  type="text"
-                  value={data.endereco}
-                  onChange={e => setData({ ...data, endereco: e.target.value })}
-                  className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-sm sm:text-lg text-slate-700"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <label htmlFor="f-num" className={labelClass}>Número</label>
-                <input
-                  id="f-num"
-                  type="text"
-                  value={data.numero}
-                  onChange={e => setData({ ...data, numero: e.target.value })}
-                  placeholder="Ex: 123"
-                  className="w-full px-0 py-1.5 sm:py-2 bg-transparent border-b-2 border-slate-200 focus:border-[#4285F4] outline-none text-sm sm:text-lg placeholder:text-slate-300"
-                />
-              </div>
-            </motion.div>
-          )}
-        </div>
-      ),
-      isValid: () => data.cidade.trim().length > 2
+        );
+      },
+      isValid: () => {
+        const cep = data.cep.replace(/\D/g, '');
+        return (cep.length === 0 || cep.length === 8) &&
+          data.rua.trim().length > 2 && data.numero.trim().length > 0 &&
+          data.bairro.trim().length > 1 && data.cidade.trim().length > 1 && /^[A-Z]{2}$/.test(data.uf);
+      }
     },
     {
       id: 'preferencia',
